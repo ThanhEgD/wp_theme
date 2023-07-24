@@ -65,3 +65,27 @@ header .top-bar .menu-item-has-children:hover .sub-menu{
 .page-wrap{
     padding: 2rem 0;
 }
+
+
+.enquiry_form .gform_button{
+    width: 100% !important;
+    background: green !important;
+    color: #fff !important;
+    display: block !important;
+    border: 0 !important;
+    padding: 1rem !important;
+}
+.enquiry_form .gform_footer{
+    margin: 0 !important;
+}
+.enquiry_form input{
+    width: 100% !important;
+}
+.enquiry_form .gform_confirmation_message{
+    font-size: 2rem;
+    text-align: center;
+    line-height: 1.3em;
+}
+.enquiry_form li.gfield {
+    padding-right: 0 !important;
+}

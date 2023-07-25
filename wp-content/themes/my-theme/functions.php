@@ -105,3 +105,139 @@ function my_first_taxonomy(){
     register_taxonomy('brands',array('cars') , $args);
 }
 add_action('init', 'my_first_taxonomy');
+
+
+add_action('wp_ajax_enquiry', 'enquiry_form');
+add_action('wp_ajax_nopriv_enquiry', 'enquiry_form');
+function enquiry_form(){
+
+    if(!wp_verify_nonce($_POST['nonce'], 'ajax-nonce')){
+        wp_send_json_error('Nonce is incorrect', 401);
+        die();
+    }
+
+    $formdata = [];
+
+    wp_parse_str($_POST['enquiry'], $formdata);
+
+    // Admin email
+    $admin_email = get_option('admin_email');
+
+    // Email headers
+    $headers[] = 'Content-Type: text/html; charset=UTF-8';
+    $headers[] = 'Form: My Website <'. $admin_email . '>';
+    $headers[] = 'Reply-to: ' . $formdata['email'];
+
+    // Who are we sending the email to?
+    $send_to = $admin_email;
+
+    // Subject
+    $subject = "Enquiry from" . $formdata['fname'] . '' . $formdata['lname'];
+
+    //Message
+    $message = '';
+    foreach ($formdata as $index => $field){
+        $message .='<strong>' . $index . '</strong>' . $field . '<br/>';
+    }
+
+    try {
+        if (wp_mail($send_to, $subject, $message, $headers)){
+            wp_send_json_success('Email sent');
+        }else{
+            wp_send_json_error('Email error');
+        }
+    }catch (Exception $e){
+        wp_send_json_error($e->getMessage());
+    }
+
+    wp_send_json_success($formdata['fname']);
+}
+
+
+/*
+ * Register Custom Navigation Walker
+ * */
+function register_navwalker(){
+    require_once get_template_directory(). '/class-wp-boostrap-navwalker.php';
+}
+add_action('after_setup_theme', 'register_navwalker');
+
+
+add_action('phpmailer_init', 'custom_mailer');
+function custom_mailer(PHPMailer $phpmailer)
+{
+    $phpmailer->SetFrom('thanhnv@egdgroup.com', 'Thanhnv');
+    $phpmailer->Host = 'email-smtp.us-west-2.amazonaws.com';
+    $phpmailer->Port = 587;
+    $phpmailer->SMTPAuth = true;
+    $phpmailer->SMTPSecure = 'tls';
+    $phpmailer->Username = SMTP_LOGIN;
+    $phpmailer->Password = SMTP_PASSWORD;
+    $phpmailer->IsSMTP();
+}
+
+function my_shortcode()
+{
+    ob_start();
+    get_template_part('includes/latest', 'cars');
+    return ob_get_clean();
+}
+add_shortcode('latest_cars', 'my_shortcode');
+
+
+function search_query(){
+
+    $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+
+    $args = [
+        'paged' => $paged,
+        'post_type' => 'cars',
+        'post_per_page' => 1,
+        'tax_query' => [],
+        'meta_query' => [
+            'relation' => 'AND',
+        ],
+    ];
+
+    if (isset($_GET['keyword'])){
+
+        if (!empty($_GET['keyword'])){
+            $args['s'] = sanitize_text_field($_GET['keyword']);
+        }
+
+    }
+
+    if (isset($_GET['brand'])){
+        if (!empty($_GET['brand'])){
+            $args['tax_query'][] = [
+                'taxonomy' => 'brands',
+                'field' => 'slug',
+                'terms' => array(sanitize_text_field($_GET['brand']))
+            ];
+        }
+    }
+
+    if (isset($_GET['price_above'])){
+        if (!empty($_GET['price_above'])){
+            $args['meta_query'][] = [
+                'key' => 'price',
+                'value' => sanitize_text_field($_GET['price_above']),
+                'type' => 'numeric',
+                'compare' => '>='
+            ];
+        }
+    }
+
+    if (isset($_GET['price_below'])){
+        if (!empty($_GET['price_below'])){
+            $args['meta_query'][] = [
+                'key' => 'price',
+                'value' => sanitize_text_field($_GET['price_below']),
+                'type' => 'numeric',
+                'compare' => '<='
+            ];
+        }
+    }
+
+    return new WP_Query($args);
+}

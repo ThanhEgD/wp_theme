@@ -80,6 +80,8 @@ $table_prefix = 'wp_';
  * @link https://wordpress.org/documentation/article/debugging-in-wordpress/
  */
 define( 'WP_DEBUG', false );
+define('SMTP_LOGIN', 'THANHNV');
+define('SMTP_PASSWORD', 'THANHNV@123');
 
 /* Add any custom values between this line and the "stop editing" line. */
 

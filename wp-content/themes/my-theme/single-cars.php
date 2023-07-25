@@ -35,14 +35,18 @@
 
                 <?php get_template_part('includes/form', 'enquiry'); ?>
 
-                <ul>
-                    <li>
-                        Colour: <?php echo the_field('colour'); ?>
-                    </li>
-                    <li>
-                        Registration: <?php echo the_field('registration'); ?>
-                    </li>
-                </ul>
+                <div class="#">
+                    <h3>#</h3>
+                    <ul>
+                        <li>
+                            Colour: <?php echo the_field('colour'); ?>
+                        </li>
+                        <li>
+                            Registration: <?php echo the_field('registration'); ?>
+                        </li>
+                    </ul>
+                </div>
+
 
                 <!-- Features -->
                 <h3>Features</h3>
